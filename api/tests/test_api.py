@@ -21,4 +21,3 @@ def test_get_job():
 
     res = client.get(f"/jobs/{job_id}")
     assert res.status_code == 200
-    
