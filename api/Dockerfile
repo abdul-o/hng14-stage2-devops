@@ -14,7 +14,7 @@ WORKDIR /app
 
 # Install curl with version pinning
 RUN apt-get update && \
-    apt-get install -y curl=7.88.* && \
+    apt-get install -y --no-install-recommends curl && \
     rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
