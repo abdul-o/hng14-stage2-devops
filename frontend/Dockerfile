@@ -1,4 +1,4 @@
-# -------- Stage 1 --------
+
 FROM node:18-alpine AS builder
 
 WORKDIR /app
@@ -8,7 +8,7 @@ RUN npm install
 
 COPY . .
 
-# -------- Stage 2 --------
+
 FROM node:18-alpine
 
 WORKDIR /app
