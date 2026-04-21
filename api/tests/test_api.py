@@ -1,19 +1,24 @@
 from fastapi.testclient import TestClient
+from unittest.mock import patch
 from api.main import app
-
 
 client = TestClient(app)
 
 
-def test_create_job():
+@patch("api.main.redis_client")
+def test_create_job(mock_redis):
+    mock_redis.rpush.return_value = True
+
     response = client.post("/jobs")
+
     assert response.status_code == 200
     assert "job_id" in response.json()
 
 
-def test_get_job():
-    response = client.post("/jobs")
-    job_id = response.json()["job_id"]
+@patch("api.main.redis_client")
+def test_get_job(mock_redis):
+    mock_redis.get.return_value = b"completed"
 
-    res = client.get(f"/jobs/{job_id}")
-    assert res.status_code == 200
+    response = client.get("/jobs/test-id")
+
+    assert response.status_code == 200
