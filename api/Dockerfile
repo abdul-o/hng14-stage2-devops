@@ -3,33 +3,29 @@ FROM python:3.12-slim AS builder
 
 WORKDIR /app
 
-# Install dependencies safely
-RUN pip install --upgrade pip
-
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+
+RUN pip install --user --no-cache-dir -r requirements.txt
 
 # -------- Stage 2: Runtime --------
 FROM python:3.12-slim
 
 WORKDIR /app
 
-# Install curl safely (fix hadolint warning)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# Install curl with version pinning
+RUN apt-get update && \
+    apt-get install -y curl=7.88.* && \
+    rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
 RUN useradd -m appuser
 
-# Copy installed dependencies from builder
-COPY --from=builder /usr/local /usr/local
+# Copy installed dependencies
+COPY --from=builder /root/.local /root/.local
+ENV PATH=/root/.local/bin:$PATH
 
 # Copy app code
 COPY . .
-
-# Change ownership (IMPORTANT)
-RUN chown -R appuser:appuser /app
 
 # Switch to non-root user
 USER appuser
@@ -38,4 +34,4 @@ USER appuser
 HEALTHCHECK CMD curl --fail http://localhost:8000/docs || exit 1
 
 # Run app
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
