@@ -12,20 +12,19 @@ services:
   api:
     build: ./api
     restart: always
-    ports:
-      - "8000:8000"
     depends_on:
       redis:
         condition: service_healthy
     environment:
-      - REDIS_HOST=${REDIS_HOST}
-      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     networks:
       - app-network
     deploy:
       resources:
         limits:
-          memory: 512m
+          cpus: "0.5"
+          memory: 512M
 
   worker:
     build: ./worker
@@ -33,34 +32,31 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-      api:
-        condition: service_started
     environment:
-      - REDIS_HOST=${REDIS_HOST}
-      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     networks:
       - app-network
     deploy:
       resources:
         limits:
-          memory: 256m
+          cpus: "0.5"
+          memory: 512M
 
   frontend:
     build: ./frontend
     restart: always
-    ports:
-      - "3000:3000"
     depends_on:
-      api:
-        condition: service_started
+      - api
     environment:
-      - API_URL=${API_URL}
+      - API_URL=http://nginx/api
     networks:
       - app-network
     deploy:
       resources:
         limits:
-          memory: 256m
+          cpus: "0.5"
+          memory: 512M
 
   nginx:
     image: nginx:latest
@@ -70,16 +66,15 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
     depends_on:
-      frontend:
-        condition: service_started
-      api:
-        condition: service_started
+      - frontend
+      - api
     networks:
       - app-network
     deploy:
       resources:
         limits:
-          memory: 128m
+          cpus: "0.5"
+          memory: 512M
 
 networks:
   app-network:

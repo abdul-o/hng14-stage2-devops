@@ -1,4 +1,4 @@
-
+# -------- Stage 1: Build --------
 FROM node:18-alpine AS builder
 
 WORKDIR /app
@@ -8,22 +8,16 @@ RUN npm install
 
 COPY . .
 
-
+# -------- Stage 2: Runtime --------
 FROM node:18-alpine
 
 WORKDIR /app
 
-# Create non-root user
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+COPY --from=builder /app .
 
-# Copy built app
-COPY --from=builder /app /app
-
+RUN adduser -D appuser
 USER appuser
-
-# Healthcheck
-HEALTHCHECK CMD wget --spider http://localhost:3000 || exit 1
 
 EXPOSE 3000
 
-CMD ["npm", "start"]
+CMD ["node", "app.js"]
