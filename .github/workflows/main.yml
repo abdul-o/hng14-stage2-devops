@@ -28,7 +28,7 @@ jobs:
         run: flake8 api/
 
       - name: Run pytest
-        run: pytest api/tests
+        run: PYTHONPATH=. pytest api/tests
 
       # ---------- Node setup ----------
       - name: Set up Node
