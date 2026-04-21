@@ -1,30 +1,23 @@
-from fastapi import FastAPI
-import redis
-import uuid
+from fastapi.testclient import TestClient
+import sys
 import os
 
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-app = FastAPI()
+from main import app
 
-
-r = redis.Redis(
-    host=os.getenv("REDIS_HOST", "redis"),
-    port=int(os.getenv("REDIS_PORT", 6379))
-)
+client = TestClient(app)
 
 
-@app.post("/jobs")
-def create_job():
-    job_id = str(uuid.uuid4())
-    r.lpush("job", job_id)
-    r.hset(f"job:{job_id}", "status", "queued")
-    return {"job_id": job_id}
+def test_create_job():
+    response = client.post("/jobs")
+    assert response.status_code == 200
+    assert "job_id" in response.json()
 
 
-@app.get("/jobs/{job_id}")
-def get_job(job_id: str):
-    status = r.hget(f"job:{job_id}", "status")
-    if not status:
-        return {"error": "not found"}
-    return {"job_id": job_id, "status": status.decode()}
+def test_get_job():
+    response = client.post("/jobs")
+    job_id = response.json()["job_id"]
 
+    res = client.get(f"/jobs/{job_id}")
+    assert res.status_code == 200
