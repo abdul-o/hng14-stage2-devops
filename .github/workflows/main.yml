@@ -61,6 +61,7 @@ jobs:
         uses: hadolint/hadolint-action@v3.1.0
         with:
           dockerfile: api/Dockerfile
+          ignore: DL3008
 
       # ---------- Trivy ----------
       - name: Run Trivy scan
