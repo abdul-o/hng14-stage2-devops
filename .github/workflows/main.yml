@@ -44,7 +44,7 @@ jobs:
       - name: Run ESLint
         run: |
           npm install -g eslint
-          eslint frontend || true
+          eslint frontend
 
       # ---------- Docker ----------
       - name: Set up Docker
@@ -77,7 +77,7 @@ jobs:
         run: sleep 10
 
       - name: Test API endpoint
-        run: curl -f http://localhost/api/jobs
+        run: curl -X POST http://localhost/api/jobs
 
       - name: Tear down
         if: always()
