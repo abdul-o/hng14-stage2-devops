@@ -1,0 +1,101 @@
+# restart:always
+
+# services:
+#   redis:
+#     image: redis:7
+    
+
+#   api:
+#     build: ./api
+#     ports:
+#       - "8000:8000"
+#     depends_on:
+#       - redis
+#     environment:
+#       - REDIS_HOST=redis
+#       - REDIS_PORT=6379
+
+
+#   worker:
+#     build: ./worker
+#     depends_on:
+#       - redis
+#     environment:
+#       - REDIS_HOST=redis
+#       - REDIS_PORT=6379
+
+#   frontend:
+#     build: ./frontend
+#     ports:
+#       - "3000:3000"
+#     depends_on:
+#       - api
+
+#   nginx:
+#     image: nginx:latest
+#     ports:
+#       - "80:80"
+#     volumes:
+#       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+#     depends_on:
+#       - frontend
+#       - api
+
+#   redis:
+#     image: redis:7
+#     healthcheck:
+#       test: ["CMD", "redis-cli", "ping"]
+#       interval: 5s
+#       retries: 5
+
+
+services:
+  redis:
+    image: redis:7
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 5
+
+  api:
+    build: ./api
+    restart: always
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
+  worker:
+    build: ./worker
+    restart: always
+    depends_on:
+      - redis
+      - api
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
+  frontend:
+    build: ./frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    environment:
+      - API_URL=http://nginx/api
+
+  nginx:
+    image: nginx:latest
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - frontend
+      - api
